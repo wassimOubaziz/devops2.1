@@ -8,7 +8,11 @@ require('dotenv').config();
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: '*', // Allow all origins
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Allow common HTTP methods
+  allowedHeaders: 'Content-Type,Authorization', // Allow common headers
+}));
 app.use(express.json());
 
 // Routes
