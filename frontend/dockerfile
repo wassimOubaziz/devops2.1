@@ -1,5 +1,5 @@
-# Use the official Node.js image as the base image
-FROM node:18
+# Use the official Node.js image as the build image
+FROM node:18 AS build
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -13,8 +13,17 @@ RUN npm install --force
 # Copy the rest of the application code
 COPY . .
 
-# Expose the port Vite will run on (default is 5173, or specify your port like 3000 in vite.config.js)
-EXPOSE 3000
+# Build the application in production mode
+RUN npm run build
 
-# Command to start the Vite development server
-CMD ["npm", "run", "dev", "--", "--host"]
+# Use the official Nginx image to serve the built application
+FROM nginx:stable-alpine
+
+# Copy the built files from the build stage to Nginx's default html directory
+COPY --from=build /app/dist /usr/share/nginx/html
+
+# Expose the port Nginx will serve on
+EXPOSE 80
+
+# Start Nginx server
+CMD ["nginx", "-g", "daemon off;"]
