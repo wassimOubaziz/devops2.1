@@ -1,7 +1,6 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const User = require('../models/user.model');
-const { logger } = require('../utils/logger');
 
 exports.register = async (req, res) => {
   try {
@@ -28,7 +27,7 @@ exports.register = async (req, res) => {
       { expiresIn: '24h' }
     );
 
-    logger.info(`New user registered: ${email}`);
+    console.log(`New user registered: ${email}`);
     res.status(201).json({
       success: true,
       message: 'User created successfully',
@@ -42,7 +41,7 @@ exports.register = async (req, res) => {
       }
     });
   } catch (error) {
-    logger.error('Registration error:', error);
+    console.log('Registration error:', error);
     res.status(500).json({ 
       success: false,
       message: 'Error registering user' 
@@ -76,7 +75,7 @@ exports.login = async (req, res) => {
       { expiresIn: '24h' }
     );
 
-    logger.info(`User logged in: ${email}`);
+    console.log(`User logged in: ${email}`);
     res.json({
       success: true,
       data: {
@@ -89,7 +88,7 @@ exports.login = async (req, res) => {
       }
     });
   } catch (error) {
-    logger.error('Login error:', error);
+    console.log('Login error:', error);
     res.status(500).json({ 
       success: false,
       message: 'Error logging in' 
@@ -115,7 +114,7 @@ exports.validateToken = async (req, res) => {
       data: { user }
     });
   } catch (error) {
-    logger.error('Token validation error:', error);
+    console.log('Token validation error:', error);
     res.status(500).json({
       success: false,
       message: 'Error validating token'

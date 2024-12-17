@@ -1,4 +1,5 @@
 const express = require('express');
+const { authenticate } = require('../middleware/auth.middleware');
 const {
   createProject,
   getProjects,
@@ -8,6 +9,8 @@ const {
 } = require('../controllers/project.controller');
 
 const router = express.Router();
+
+router.use(authenticate);
 
 router.post('/', createProject);
 router.get('/', getProjects);
