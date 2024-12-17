@@ -1,0 +1,23 @@
+FROM node:18-alpine
+
+WORKDIR /usr/src/app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install --legacy-peer-deps --force && \
+    npm cache clean --force
+
+# Copy source code
+COPY . .
+
+# Expose port
+EXPOSE 3001
+
+# Wait for PostgreSQL script
+COPY wait-for-postgres.sh /wait-for-postgres.sh
+RUN chmod +x /wait-for-postgres.sh
+
+# Start command with wait-for-postgres
+CMD ["/bin/sh", "-c", "/wait-for-postgres.sh && npm start"]
