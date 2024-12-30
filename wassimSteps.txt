@@ -1,0 +1,131 @@
+To deploy your application:
+
+First, create these Jenkins credentials:
+aws-access-key: Your AWS access key
+aws-secret-key: Your AWS secret key
+aws-token-key: Your AWS session token
+db-username: Database username
+db-password: Database password
+Run the pipeline in two steps:
+Code
+CopyInsert
+# Step 1: Create infrastructure
+Run pipeline with:
+- TERRAFORM_ACTION = apply
+- Other parameters can be left as default
+
+# Step 2: Deploy application
+Run pipeline with:
+- TERRAFORM_ACTION = none
+- SERVICE = all
+The pipeline will:
+
+Create all AWS infrastructure (VPC, EKS, RDS)
+Build and push Docker images
+Deploy all services to Kubernetes
+Verify the deployment and database connection
+Output the frontend LoadBalancer URL
+Would you like me to make any adjustments to this setup?
+
+Me
+
+how can i do this 
+# Step 1: Create infrastructure
+Run pipeline with:
+- TERRAFORM_ACTION = apply
+- Other parameters can be left as default
+
+# Step 2: Deploy application
+Run pipeline with:
+- TERRAFORM_ACTION = none
+- SERVICE = all
+
+I'll guide you through running the pipeline in Jenkins step by step:
+
+Step 1: Create Infrastructure
+
+Go to your Jenkins dashboard
+Click on your pipeline project
+Click "Build with Parameters"
+Set the parameters as follows:
+SERVICE: select all
+AWS_ACCOUNT_ID: leave as default (or set to your AWS account ID)
+AWS_REGION: leave as default (or set to your preferred region)
+VERSION: leave as latest
+CLUSTER_NAME: leave as main-cluster
+TERRAFORM_ACTION: select apply
+Let me create a script to help you run this from the command line:
+
+Created
+deploy_infra.sh
++25
+-0
+ 0
+Open diff
+Created
+deploy_app.sh
++25
+-0
+ 0
+Open diff
+Here's how to run the deployment:
+
+Through Jenkins UI:
+Step 1: Create Infrastructure
+
+Go to Jenkins dashboard
+Navigate to your pipeline
+Click "Build with Parameters"
+Set:
+Code
+CopyInsert
+TERRAFORM_ACTION = apply
+SERVICE = all
+Click "Build"
+Wait for the infrastructure creation to complete (check the console output)
+Step 2: Deploy Application
+
+Once Step 1 is complete, go back to your pipeline
+Click "Build with Parameters" again
+Set:
+Code
+CopyInsert
+TERRAFORM_ACTION = none
+SERVICE = all
+Click "Build"
+Through Command Line:
+Edit the scripts I created with your Jenkins details:
+Open deploy_infra.sh and deploy_app.sh
+Replace:
+your-jenkins-url:8080 with your Jenkins URL
+your-pipeline-name with your pipeline name
+your-jenkins-token with your Jenkins API token
+your-username with your Jenkins username
+Run the scripts:
+Code
+CopyInsert
+# First, make the scripts executable
+chmod +x deploy_infra.sh deploy_app.sh
+
+# Step 1: Create infrastructure
+./deploy_infra.sh
+
+# Wait for infrastructure creation to complete (check Jenkins UI)
+
+# Step 2: Deploy application
+./deploy_app.sh
+Important Notes:
+
+Make sure to wait for Step 1 (infrastructure creation) to complete successfully before starting Step 2
+You can monitor the progress in Jenkins:
+Green status means success
+Red status means failure
+Blue status means in progress
+Check the console output for each build to see detailed progress and any potential errors
+To get your Jenkins API token:
+
+Go to Jenkins dashboard
+Click your username → Configure
+Click "Add new Token"
+Give it a name and generate
+Copy the token (you won't be able to see it again)

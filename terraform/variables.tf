@@ -37,3 +37,15 @@ variable "database_password" {
   description = "Database master password"
   sensitive   = true
 }
+
+variable "db_username" {
+  description = "Username for PostgreSQL RDS instance"
+  type        = string
+  default     = "postgres"
+}
+
+variable "db_password" {
+  description = "Password for PostgreSQL RDS instance"
+  type        = string
+  sensitive   = true
+}
