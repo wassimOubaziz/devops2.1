@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/database');
+const sequelize = require('../config/database');
 
 const Project = sequelize.define('Project', {
   id: {
@@ -16,12 +16,13 @@ const Project = sequelize.define('Project', {
     allowNull: true
   },
   status: {
-    type: DataTypes.ENUM('active', 'completed', 'on-hold'),
-    defaultValue: 'active'
+    type: DataTypes.ENUM('ACTIVE', 'COMPLETED', 'ARCHIVED'),
+    defaultValue: 'ACTIVE',
+    allowNull: false
   },
   startDate: {
     type: DataTypes.DATE,
-    allowNull: false
+    allowNull: true
   },
   endDate: {
     type: DataTypes.DATE,

@@ -2,12 +2,14 @@ FROM node:18-alpine
 
 WORKDIR /usr/src/app
 
+# Install PostgreSQL client
+RUN apk add --no-cache postgresql-client
+
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies with legacy peer deps support
-RUN npm install --legacy-peer-deps --force && \
-    npm cache clean --force
+# Install dependencies
+RUN npm install
 
 # Copy source code
 COPY . .
@@ -20,4 +22,4 @@ COPY wait-for-postgres.sh /wait-for-postgres.sh
 RUN chmod +x /wait-for-postgres.sh
 
 # Start command
-CMD ["npm", "start"]
+CMD ["/bin/sh", "-c", "/wait-for-postgres.sh && npm start"]

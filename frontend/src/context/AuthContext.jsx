@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { auth } from '../services/api';
 
 const AuthContext = createContext(null);
 
@@ -7,26 +8,42 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in (e.g., check localStorage or token)
     const token = localStorage.getItem('token');
     if (token) {
-      // Validate token and set user
-      // This is where you'd typically make an API call to validate the token
       setUser({ token });
+      // Optionally fetch user profile here
+      auth.getProfile()
+        .then(response => {
+          setUser(prevUser => ({
+            ...prevUser,
+            ...response.data.data.user
+          }));
+        })
+        .catch(error => {
+          console.error('Error fetching user profile:', error);
+          if (error.response?.status === 401) {
+            logout();
+          }
+        });
     }
     setLoading(false);
   }, []);
 
   const login = async (credentials) => {
     try {
-      // Make API call to login
-      // const response = await api.post('/auth/login', credentials);
-      // const { token, user } = response.data;
+      const response = await auth.login(credentials);
+      const { token } = response.data.data;
       
-      // For now, just mock the response
-      const mockToken = 'mock-token';
-      localStorage.setItem('token', mockToken);
-      setUser({ token: mockToken });
+      localStorage.setItem('token', token);
+      setUser({ token });
+      
+      // Fetch user profile after login
+      const profileResponse = await auth.getProfile();
+      setUser(prevUser => ({
+        ...prevUser,
+        ...profileResponse.data.data.user
+      }));
+      
       return true;
     } catch (error) {
       console.error('Login failed:', error);
@@ -36,14 +53,19 @@ export const AuthProvider = ({ children }) => {
 
   const signup = async (userData) => {
     try {
-      // Make API call to register
-      // const response = await api.post('/auth/register', userData);
-      // const { token, user } = response.data;
+      const response = await auth.signup(userData);
+      const { token } = response.data.data;
       
-      // For now, just mock the response
-      const mockToken = 'mock-token';
-      localStorage.setItem('token', mockToken);
-      setUser({ token: mockToken });
+      localStorage.setItem('token', token);
+      setUser({ token });
+      
+      // Fetch user profile after signup
+      const profileResponse = await auth.getProfile();
+      setUser(prevUser => ({
+        ...prevUser,
+        ...profileResponse.data.data.user
+      }));
+      
       return true;
     } catch (error) {
       console.error('Signup failed:', error);
@@ -51,9 +73,14 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    setUser(null);
+  const logout = async () => {
+    try {
+      await auth.logout();
+      localStorage.removeItem('token');
+      setUser(null);
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
   };
 
   const value = {

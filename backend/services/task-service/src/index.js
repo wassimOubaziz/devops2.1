@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { sequelize } = require('./config/database');
+const sequelize = require('./config/database');
 const taskRoutes = require('./routes/task.routes');
 const { logger } = require('./utils/logger');
 require('dotenv').config();
@@ -9,9 +9,9 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: ['*', 'localhost:3000', 'http://localhost:3000'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  origin: '*',
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  allowedHeaders: 'Content-Type,Authorization',
 }));
 app.use(express.json());
 
@@ -23,25 +23,33 @@ app.get('/health', (req, res) => {
   res.status(200).json({ status: 'healthy' });
 });
 
-// Database connection
-const initializeDatabase = async () => {
+// Error handling middleware
+app.use((err, req, res, next) => {
+  logger.error('Error:', err);
+  res.status(500).json({
+    success: false,
+    message: 'Internal server error'
+  });
+});
+
+const PORT = process.env.PORT || 3003;
+
+// Initialize database and start server
+const startServer = async () => {
   try {
     await sequelize.authenticate();
     logger.info('Connected to PostgreSQL database');
     
-    // Sync database models
-    await sequelize.sync();
+    await sequelize.sync({ alter: true });
     logger.info('Database models synchronized');
+
+    app.listen(PORT, () => {
+      logger.info(`Task service running on port ${PORT}`);
+    });
   } catch (error) {
-    logger.error('Database connection error:', error);
+    logger.error('Failed to start server:', error);
     process.exit(1);
   }
 };
 
-const PORT = process.env.PORT || 3003;
-
-initializeDatabase().then(() => {
-  app.listen(PORT, () => {
-    logger.info(`Task service running on port ${PORT}`);
-  });
-});
+startServer();

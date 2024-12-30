@@ -2,6 +2,9 @@ FROM node:18-alpine
 
 WORKDIR /usr/src/app
 
+# Install PostgreSQL client
+RUN apk add --no-cache postgresql-client
+
 # Copy package files
 COPY package*.json ./
 

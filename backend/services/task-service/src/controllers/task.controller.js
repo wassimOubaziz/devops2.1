@@ -1,5 +1,6 @@
 const Task = require('../models/task.model');
 const { logger } = require('../utils/logger');
+const { Op } = require('sequelize');
 
 exports.createTask = async (req, res) => {
   try {
@@ -13,7 +14,8 @@ exports.createTask = async (req, res) => {
       dueDate,
       priority,
       assigneeId,
-      createdById
+      createdById,
+      status: 'TODO'
     });
 
     logger.info(`Task created: ${task.id}`);
@@ -32,12 +34,19 @@ exports.createTask = async (req, res) => {
 
 exports.getTasks = async (req, res) => {
   try {
-    const { projectId, status, assigneeId } = req.query;
-    const whereClause = {};
+    const { projectId, status } = req.query;
+    const userId = req.user.userId;
+    
+    // Build where clause
+    const whereClause = {
+      [Op.or]: [
+        { assigneeId: userId },
+        { createdById: userId }
+      ]
+    };
 
     if (projectId) whereClause.projectId = projectId;
     if (status) whereClause.status = status;
-    if (assigneeId) whereClause.assigneeId = assigneeId;
 
     const tasks = await Task.findAll({
       where: whereClause,
@@ -46,7 +55,7 @@ exports.getTasks = async (req, res) => {
 
     res.json({
       success: true,
-      data: tasks
+      data: tasks || []
     });
   } catch (error) {
     logger.error('Error fetching tasks:', error);
@@ -60,7 +69,17 @@ exports.getTasks = async (req, res) => {
 exports.getTaskById = async (req, res) => {
   try {
     const { id } = req.params;
-    const task = await Task.findByPk(id);
+    const userId = req.user.userId;
+
+    const task = await Task.findOne({
+      where: {
+        id,
+        [Op.or]: [
+          { assigneeId: userId },
+          { createdById: userId }
+        ]
+      }
+    });
 
     if (!task) {
       return res.status(404).json({
@@ -85,19 +104,28 @@ exports.getTaskById = async (req, res) => {
 exports.updateTask = async (req, res) => {
   try {
     const { id } = req.params;
+    const userId = req.user.userId;
     const updates = req.body;
 
-    const task = await Task.findByPk(id);
+    const task = await Task.findOne({
+      where: {
+        id,
+        [Op.or]: [
+          { assigneeId: userId },
+          { createdById: userId }
+        ]
+      }
+    });
+
     if (!task) {
       return res.status(404).json({
         success: false,
-        message: 'Task not found'
+        message: 'Task not found or unauthorized'
       });
     }
 
     await task.update(updates);
-    logger.info(`Task updated: ${id}`);
-    
+
     res.json({
       success: true,
       data: task
@@ -114,18 +142,24 @@ exports.updateTask = async (req, res) => {
 exports.deleteTask = async (req, res) => {
   try {
     const { id } = req.params;
-    const task = await Task.findByPk(id);
+    const userId = req.user.userId;
+
+    const task = await Task.findOne({
+      where: {
+        id,
+        createdById: userId
+      }
+    });
 
     if (!task) {
       return res.status(404).json({
         success: false,
-        message: 'Task not found'
+        message: 'Task not found or unauthorized'
       });
     }
 
     await task.destroy();
-    logger.info(`Task deleted: ${id}`);
-    
+
     res.json({
       success: true,
       message: 'Task deleted successfully'

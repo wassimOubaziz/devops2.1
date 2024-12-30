@@ -19,4 +19,17 @@ const sequelize = new Sequelize(
   }
 );
 
-module.exports = { sequelize };
+const initDatabase = async () => {
+  try {
+    await sequelize.authenticate();
+    console.log('Database connection established successfully.');
+    await sequelize.sync({ alter: true });
+    console.log('Database models synchronized.');
+  } catch (error) {
+    console.error('Unable to connect to the database:', error);
+    throw error;
+  }
+};
+
+module.exports = sequelize;
+module.exports.initDatabase = initDatabase;

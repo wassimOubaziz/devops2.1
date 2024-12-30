@@ -19,7 +19,8 @@ const ProjectListPage = () => {
     const fetchProjects = async () => {
       try {
         const response = await projects.getAll();
-        setProjectList(response.data);
+        console.log(response.data.data)
+        setProjectList(response.data.data || []);
       } catch (error) {
         console.error('Failed to fetch projects:', error);
         toast.error('Failed to load projects');
@@ -86,9 +87,9 @@ const ProjectListPage = () => {
       </div>
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {projectList.map((project, index) => (
+        {projectList?.map((project, index) => (
           <motion.div
-            key={project.id}
+            key={project?.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}

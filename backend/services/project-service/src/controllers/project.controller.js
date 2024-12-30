@@ -11,7 +11,8 @@ exports.createProject = async (req, res) => {
       description,
       startDate,
       endDate,
-      ownerId
+      ownerId,
+      status: 'ACTIVE' // Default status
     });
 
     logger.info(`Project created: ${project.id}`);
@@ -43,9 +44,10 @@ exports.getProjects = async (req, res) => {
       order: [['createdAt', 'DESC']]
     });
 
+    // Return empty array if no projects found
     res.json({
       success: true,
-      data: projects
+      data: projects || []
     });
   } catch (error) {
     logger.error('Error fetching projects:', error);
@@ -62,13 +64,16 @@ exports.getProjectById = async (req, res) => {
     const ownerId = req.user.userId;
 
     const project = await Project.findOne({
-      where: { id, ownerId }
+      where: {
+        id,
+        ownerId
+      }
     });
 
     if (!project) {
       return res.status(404).json({
         success: false,
-        message: 'Project not found'
+        message: 'Project not found or unauthorized'
       });
     }
 
@@ -92,19 +97,21 @@ exports.updateProject = async (req, res) => {
     const updates = req.body;
 
     const project = await Project.findOne({
-      where: { id, ownerId }
+      where: {
+        id,
+        ownerId
+      }
     });
 
     if (!project) {
       return res.status(404).json({
         success: false,
-        message: 'Project not found'
+        message: 'Project not found or unauthorized'
       });
     }
 
     await project.update(updates);
-    logger.info(`Project updated: ${id}`);
-    
+
     res.json({
       success: true,
       data: project
@@ -124,19 +131,21 @@ exports.deleteProject = async (req, res) => {
     const ownerId = req.user.userId;
 
     const project = await Project.findOne({
-      where: { id, ownerId }
+      where: {
+        id,
+        ownerId
+      }
     });
 
     if (!project) {
       return res.status(404).json({
         success: false,
-        message: 'Project not found'
+        message: 'Project not found or unauthorized'
       });
     }
 
     await project.destroy();
-    logger.info(`Project deleted: ${id}`);
-    
+
     res.json({
       success: true,
       message: 'Project deleted successfully'

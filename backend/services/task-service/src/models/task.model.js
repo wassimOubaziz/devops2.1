@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/database');
+const sequelize = require('../config/database');
 
 const Task = sequelize.define('Task', {
   id: {
@@ -16,12 +16,14 @@ const Task = sequelize.define('Task', {
     allowNull: true
   },
   status: {
-    type: DataTypes.ENUM('todo', 'in-progress', 'completed'),
-    defaultValue: 'todo'
+    type: DataTypes.ENUM('TODO', 'IN_PROGRESS', 'DONE'),
+    defaultValue: 'TODO',
+    allowNull: false
   },
   priority: {
-    type: DataTypes.ENUM('low', 'medium', 'high'),
-    defaultValue: 'medium'
+    type: DataTypes.ENUM('LOW', 'MEDIUM', 'HIGH'),
+    defaultValue: 'MEDIUM',
+    allowNull: false
   },
   dueDate: {
     type: DataTypes.DATE,
